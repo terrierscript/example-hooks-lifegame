@@ -4,7 +4,8 @@ import React, {
   useMemo,
   useLayoutEffect,
   createContext,
-  useContext
+  useContext,
+  useCallback
 } from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
@@ -26,7 +27,28 @@ const CellItem = styled.div`
   height: ${cellPx}px;
   background: ${({ value }) => (value ? "black" : "white")};
 `
+const useTimerEffect = () => {
+  const [time, setTimer] = useState(new Date().getTime())
+  const [diff, setDiff] = useState(0)
+  useLayoutEffect(() => {
+    const loop = () => {
+      roopFn(() => {
+        const f = new Date().getTime()
+        setTimer((time) => {
+          setDiff(f - time)
+          return f
+        })
+        loop()
+      }, 1000)
+    }
+    loop()
+  }, [])
+  return { time, diff }
+}
+
 const useCellMap = (size) => {
+  const { time, diff } = useTimerEffect()
+
   const [cellMap, setMap] = useState(() => {
     const arr = initialArray(size)
     return Object.fromEntries(
@@ -36,25 +58,34 @@ const useCellMap = (size) => {
     )
   })
 
-  const updateValue = ({ x, y, v }) => {
-    setMap((oldMap) => {
-      return {
-        ...oldMap,
-        [`${x}_${y}`]: { x, y, v }
-      }
-    })
-  }
-  const getValue = (x, y) => {
-    return cellMap[`${x}_${y}`].v
-  }
-  return { cellMap, updateValue, getValue }
+  const updateValue = useCallback(
+    ({ x, y, v }) => {
+      setMap((oldMap) => {
+        return {
+          ...oldMap,
+          [`${x}_${y}`]: { x, y, v }
+        }
+      })
+    },
+    [setMap]
+  )
+  const getValue = useCallback(
+    (x, y) => {
+      return cellMap[`${x}_${y}`].v
+    },
+    [cellMap]
+  )
+  return { cellMap, updateValue, getValue, time, diff }
 }
+
 const CellMapContext = createContext<ReturnType<typeof useCellMap>>({
   cellMap: {},
   updateValue: () => {},
   getValue: (x: number, y: number) => {
     return 0
-  }
+  },
+  time: 0,
+  diff: 0
 })
 
 // const getId = (x, y) => `cell-${x}_${y}`
@@ -68,19 +99,19 @@ const adjCells = (x, y, size) =>
     .flat()
     .filter(([xx, yy]) => !(xx === x && yy === y) && validCell(xx, yy, size))
 
-const Cell = ({ x, y, time, size }) => {
-  const { updateValue, getValue } = useContext(CellMapContext)
+const Cell = ({ x, y, size }) => {
+  const { updateValue, getValue, time } = useContext(CellMapContext)
   const value = getValue(x, y)
-  useLayoutEffect(() => {
-    const vs = adjCells(x, y, size).map(([x, y]) => getValue(x, y))
-
-    const num = vs
-      .map((c) => (c === 1 ? 1 : 0))
-      .reduce((acc: number, curr) => acc + curr, 0)
-    const nextValue = next(value, num) ? 1 : 0
-    updateValue({ x, y, v: nextValue })
-  }, [time])
-  return <CellItem data-value={value} value={value} />
+  const adjCellSize = useMemo(() => adjCells(x, y, size), [x, y, size])
+  // useLayoutEffect(() => {
+  //   const vs = adjCellSize.map(([x, y]) => getValue(x, y))
+  //   const num = vs
+  //     .map((c) => (c === 1 ? 1 : 0))
+  //     .reduce((acc: number, curr) => acc + curr, 0)
+  //   const nextValue = next(value, num) ? 1 : 0
+  //   updateValue({ x, y, v: nextValue })
+  // }, [time])
+  return <CellItem value={value} />
 }
 
 const Grid = styled.div`
@@ -107,30 +138,11 @@ const roopFn = (fn, time) => {
   // @ts-ignore
   return requestIdleCallback(fn, { timeout: time })
 }
-const useTimerEffect = () => {
-  const [time, setTimer] = useState(new Date().getTime())
-  const [diff, setDiff] = useState(0)
-  useLayoutEffect(() => {
-    const loop = () => {
-      roopFn(() => {
-        const f = new Date().getTime()
-        setTimer((time) => {
-          setDiff(f - time)
-          return f
-        })
-        loop()
-      }, 100)
-    }
-    loop()
-  }, [])
-  return { time, diff }
-}
 
 const App = () => {
-  const { time, diff } = useTimerEffect()
   const [size, setSize] = useState(30)
   const cellMapCtx = useCellMap(size)
-  const { cellMap } = cellMapCtx
+  const { cellMap, time, diff } = cellMapCtx
 
   return (
     <div>
@@ -153,13 +165,7 @@ const App = () => {
       <CellMapContext.Provider value={cellMapCtx}>
         <Grid size={size} key={size}>
           {Object.values(cellMap).map(({ x, y }) => (
-            <Cell
-              time={time}
-              x={x}
-              y={y}
-              size={size}
-              key={`${size}_${y}_${x}`}
-            ></Cell>
+            <Cell x={x} y={y} size={size} key={`${size}_${y}_${x}`}></Cell>
           ))}
         </Grid>
       </CellMapContext.Provider>
