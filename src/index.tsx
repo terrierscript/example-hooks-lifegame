@@ -41,6 +41,7 @@ const adjCellIds = (x, y, size) =>
 const Cell = ({ x, y, initial, time, size }) => {
   const [start, setStart] = useState(false)
   const { value, update } = useCell(initial)
+  const [adjValues, setAdjValues] = useState({})
   const id = getId(x, y)
   const adjCells = useMemo(
     () => adjCellIds(x, y, size).map(([x, y]) => getId(x, y)),
@@ -48,32 +49,56 @@ const Cell = ({ x, y, initial, time, size }) => {
   )
 
   // console.log(adjCells)
+  const adjElm = useMemo(() => {
+    return adjCells
+      .map((id) => document.getElementById(id))
+      .filter((s) => s !== null)
+    //  === "1" ? 1 : 0))
+  }, [adjCells, start])
+
+  useEffect(() => {
+    const obs = new MutationObserver((record) => {
+      const newObj = Object.fromEntries(
+        record.map(({ target }) =>
+          //@ts-ignore
+          [target.id, target.dataset.value]
+        )
+      )
+      console.log("obs", record, newObj)
+    })
+    adjElm.map((elm) => {
+      // @ts-ignore
+      obs.observe(elm, {
+        attributes: true,
+        attributeFilter: ["data-value"]
+      })
+    })
+    const adjV = Object.fromEntries(
+      adjElm.map((elm) => [elm.id, elm.dataset.value])
+    )
+    console.log(adjV)
+
+    setAdjValues(adjV)
+  }, [adjElm])
+
   const adj = useMemo(() => {
     return adjCells
       .map((id) => document.getElementById(id))
       .map((elm) => elm && elm.dataset.value)
     //  === "1" ? 1 : 0))
   }, [time, adjCells])
+  useEffect(() => {
+    const num = Object.values(adjValues)
+      .map((c) => (c === "1" ? 1 : 0))
+      .reduce((acc: number, curr) => acc + curr, 0)
+    update(num)
+  }, [adjValues])
   useLayoutEffect(() => {
     if (adj[0] === null) {
       return
     }
     setStart(true)
   }, [start, adj])
-  const num = useMemo(
-    () =>
-      adj
-        .map((c) => (c === "1" ? 1 : 0))
-        .reduce((acc: number, curr) => acc + curr, 0),
-    [adj]
-  )
-
-  // console.log(x, y, adj)
-  useLayoutEffect(() => {
-    if (start) {
-      update(num)
-    }
-  }, [start, num])
   return <CellItem id={id} data-value={value} value={value} />
 }
 
@@ -117,7 +142,7 @@ const useTimerEffect = () => {
 
 const App = () => {
   const { time, diff } = useTimerEffect()
-  const [size, setSize] = useState(10)
+  const [size, setSize] = useState(4)
   const arr = useMemo(() => {
     const arr = initialArray(size)
     return arr
