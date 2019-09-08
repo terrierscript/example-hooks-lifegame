@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useLayoutEffect } from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
 
-const size = 50
 const cellPx = 4
 
 const next = (val, num) => {
@@ -39,13 +38,13 @@ const adjCellIds = (x, y, size) =>
     .flat()
     .filter(([xx, yy]) => !(xx === x && yy === y) && validCell(xx, yy, size))
 
-const Cell = ({ x, y, initial, time }) => {
+const Cell = ({ x, y, initial, time, size }) => {
   const [start, setStart] = useState(false)
   const { value, update } = useCell(initial)
   const id = getId(x, y)
   const adjCells = useMemo(
     () => adjCellIds(x, y, size).map(([x, y]) => getId(x, y)),
-    [x, y]
+    [x, y, size]
   )
 
   // console.log(adjCells)
@@ -80,17 +79,18 @@ const Cell = ({ x, y, initial, time }) => {
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(${size}, ${cellPx}px);
+  grid-template-columns: repeat(${({ size }) => size}, ${cellPx}px);
 `
-const initialArray = (size) =>
-  Array(size)
+const initialArray = (size) => {
+  return Array(size)
     .fill([])
-    .map((v) =>
-      Array(size)
+    .map((v, y) => {
+      return Array(size)
         .fill(0)
-        .map(() => (Math.random() > 0.5 ? 1 : 0))
-    )
-
+        .map((_, x) => ({ x, y, v: Math.random() > 0.5 ? 1 : 0 }))
+    })
+    .flat()
+}
 const roopFn = (fn, time) => {
   // return setTimeout(fn, time)
   // @ts-ignore
@@ -98,30 +98,59 @@ const roopFn = (fn, time) => {
 }
 const useTimerEffect = () => {
   const [time, setTimer] = useState(new Date().getTime())
+  const [diff, setDiff] = useState(0)
   useLayoutEffect(() => {
     const loop = () => {
       roopFn(() => {
-        setTimer(new Date().getTime())
+        const f = new Date().getTime()
+        setTimer((time) => {
+          setDiff(f - time)
+          return f
+        })
         loop()
       }, 1000)
     }
     loop()
   }, [])
-  return time
+  return { time, diff }
 }
 
 const App = () => {
-  const time = useTimerEffect()
-  const arr = initialArray(size)
+  const { time, diff } = useTimerEffect()
+  const [size, setSize] = useState(10)
+  const arr = useMemo(() => {
+    const arr = initialArray(size)
+    return arr
+  }, [size])
   return (
     <div>
-      frame: {time}
-      <Grid>
-        {arr.map((ys, y) =>
-          ys.map((v, x) => (
-            <Cell time={time} x={x} y={y} key={`${y}_${x}`} initial={v}></Cell>
-          ))
-        )}
+      <div>
+        frame: {time}(diff: {diff})
+      </div>
+      <div>
+        size
+        <input
+          type="number"
+          value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+        ></input>
+        <button onClick={() => setSize(10)}>cell: 10</button>
+        <button onClick={() => setSize(30)}>cell: 30</button>
+        <button onClick={() => setSize(50)}>cell: 50</button>
+        <button onClick={() => setSize(80)}>cell: 80</button>
+        <button onClick={() => setSize(100)}>cell: 100</button>
+      </div>
+      <Grid size={size} key={size}>
+        {arr.map(({ x, y, v }) => (
+          <Cell
+            time={time}
+            x={x}
+            y={y}
+            size={size}
+            key={`${size}_${y}_${x}`}
+            initial={v}
+          ></Cell>
+        ))}
       </Grid>
     </div>
   )
