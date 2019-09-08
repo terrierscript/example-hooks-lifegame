@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useMemo, useLayoutEffect } from "react"
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useLayoutEffect,
+  createContext,
+  useContext
+} from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
 
@@ -14,67 +21,66 @@ const next = (val, num) => {
     return false
   }
 }
-const useCell = (initial) => {
-  const [value, setValue] = useState(initial)
-  const update = (num) => {
-    setValue(next(value, num) ? 1 : 0)
-  }
-  return { value, update }
-}
-
 const CellItem = styled.div`
   width: ${cellPx}px;
   height: ${cellPx}px;
   background: ${({ value }) => (value ? "black" : "white")};
 `
-const getId = (x, y) => `cell-${x}_${y}`
+const useCellMap = (size) => {
+  const [cellMap, setMap] = useState(() => {
+    const arr = initialArray(size)
+    return Object.fromEntries(
+      arr.map((a) => {
+        return [a.key, { x: a.x, y: a.y, v: a.v }]
+      })
+    )
+  })
+
+  const updateValue = ({ x, y, v }) => {
+    setMap((oldMap) => {
+      return {
+        ...oldMap,
+        [`${x}_${y}`]: { x, y, v }
+      }
+    })
+  }
+  const getValue = (x, y) => {
+    return cellMap[`${x}_${y}`].v
+  }
+  return { cellMap, updateValue, getValue }
+}
+const CellMapContext = createContext<ReturnType<typeof useCellMap>>({
+  cellMap: {},
+  updateValue: () => {},
+  getValue: (x: number, y: number) => {
+    return 0
+  }
+})
+
+// const getId = (x, y) => `cell-${x}_${y}`
 
 const validCell = (xx, yy, size) =>
   !(xx < 0) && !(yy < 0) && !(size <= xx) && !(size <= yy)
 
-const adjCellIds = (x, y, size) =>
+const adjCells = (x, y, size) =>
   [x, x + 1, x - 1]
     .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
     .flat()
     .filter(([xx, yy]) => !(xx === x && yy === y) && validCell(xx, yy, size))
 
-const Cell = ({ x, y, initial, time, size }) => {
-  const [start, setStart] = useState(false)
-  const { value, update } = useCell(initial)
-  const id = getId(x, y)
-  const adjCells = useMemo(
-    () => adjCellIds(x, y, size).map(([x, y]) => getId(x, y)),
-    [x, y, size]
-  )
-
-  // console.log(adjCells)
-  const adj = useMemo(() => {
-    return adjCells
-      .map((id) => document.getElementById(id))
-      .map((elm) => elm && elm.dataset.value)
-    //  === "1" ? 1 : 0))
-  }, [time, adjCells])
+const Cell = ({ x, y, time, size }) => {
+  const { updateValue, getValue } = useContext(CellMapContext)
+  const value = getValue(x, y)
   useLayoutEffect(() => {
-    if (adj[0] === null) {
-      return
-    }
-    setStart(true)
-  }, [start, adj])
-  const num = useMemo(
-    () =>
-      adj
-        .map((c) => (c === "1" ? 1 : 0))
-        .reduce((acc: number, curr) => acc + curr, 0),
-    [adj]
-  )
+    const vs = adjCells(x, y, size).map(([x, y]) => getValue(x, y))
 
-  // console.log(x, y, adj)
-  useLayoutEffect(() => {
-    if (start) {
-      update(num)
-    }
-  }, [start, num])
-  return <CellItem id={id} data-value={value} value={value} />
+    const num = vs
+      .map((c) => (c === 1 ? 1 : 0))
+      .reduce((acc: number, curr) => acc + curr, 0)
+    const nextValue = next(value, num) ? 1 : 0
+    updateValue({ x, y, v: nextValue })
+  }, [time])
+  return <CellItem data-value={value} value={value} />
 }
 
 const Grid = styled.div`
@@ -84,10 +90,15 @@ const Grid = styled.div`
 const initialArray = (size) => {
   return Array(size)
     .fill([])
-    .map((v, y) => {
+    .map((_, y) => {
       return Array(size)
         .fill(0)
-        .map((_, x) => ({ x, y, v: Math.random() > 0.5 ? 1 : 0 }))
+        .map((_, x) => ({
+          key: `${x}_${y}`,
+          x,
+          y,
+          v: Math.random() > 0.5 ? 1 : 0
+        }))
     })
     .flat()
 }
@@ -108,7 +119,7 @@ const useTimerEffect = () => {
           return f
         })
         loop()
-      }, 1000)
+      }, 100)
     }
     loop()
   }, [])
@@ -117,11 +128,10 @@ const useTimerEffect = () => {
 
 const App = () => {
   const { time, diff } = useTimerEffect()
-  const [size, setSize] = useState(10)
-  const arr = useMemo(() => {
-    const arr = initialArray(size)
-    return arr
-  }, [size])
+  const [size, setSize] = useState(30)
+  const cellMapCtx = useCellMap(size)
+  const { cellMap } = cellMapCtx
+
   return (
     <div>
       <div>
@@ -140,18 +150,19 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
-      <Grid size={size} key={size}>
-        {arr.map(({ x, y, v }) => (
-          <Cell
-            time={time}
-            x={x}
-            y={y}
-            size={size}
-            key={`${size}_${y}_${x}`}
-            initial={v}
-          ></Cell>
-        ))}
-      </Grid>
+      <CellMapContext.Provider value={cellMapCtx}>
+        <Grid size={size} key={size}>
+          {Object.values(cellMap).map(({ x, y }) => (
+            <Cell
+              time={time}
+              x={x}
+              y={y}
+              size={size}
+              key={`${size}_${y}_${x}`}
+            ></Cell>
+          ))}
+        </Grid>
+      </CellMapContext.Provider>
     </div>
   )
 }
