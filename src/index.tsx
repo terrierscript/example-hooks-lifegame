@@ -50,22 +50,37 @@ const Cell = ({ x, y, initial, time, size }) => {
 
   // console.log(adjCells)
   const adjElm = useMemo(() => {
-    return adjCells
-      .map((id) => document.getElementById(id))
-      .filter((s) => s !== null)
+    return adjCells.map((id) => document.getElementById(id))
+    // .filter((s) => s !== null)
     //  === "1" ? 1 : 0))
   }, [adjCells, start])
 
   useEffect(() => {
-    const obs = new MutationObserver((record) => {
-      const newObj = Object.fromEntries(
-        record.map(({ target }) =>
-          //@ts-ignore
-          [target.id, target.dataset.value]
-        )
+    if (!start) return
+    const adjV = Object.fromEntries(
+      adjElm.map((elm) => [elm.id, elm.dataset.value])
+    )
+    if (x == 3 && y == 3) {
+      console.log(adjV)
+    }
+
+    setAdjValues(adjV)
+  }, [start, adjElm])
+
+  const obs = new MutationObserver((record) => {
+    const newObj = Object.fromEntries(
+      record.map(({ target }) =>
+        //@ts-ignore
+        [target.id, target.dataset.value]
       )
-      console.log("obs", record, newObj)
+    )
+    setAdjValues((adjValues) => {
+      return { ...adjValues, ...newObj }
     })
+  })
+
+  useEffect(() => {
+    if (!start) return
     adjElm.map((elm) => {
       // @ts-ignore
       obs.observe(elm, {
@@ -73,13 +88,7 @@ const Cell = ({ x, y, initial, time, size }) => {
         attributeFilter: ["data-value"]
       })
     })
-    const adjV = Object.fromEntries(
-      adjElm.map((elm) => [elm.id, elm.dataset.value])
-    )
-    console.log(adjV)
-
-    setAdjValues(adjV)
-  }, [adjElm])
+  }, [start, adjElm])
 
   const adj = useMemo(() => {
     return adjCells
@@ -88,13 +97,14 @@ const Cell = ({ x, y, initial, time, size }) => {
     //  === "1" ? 1 : 0))
   }, [time, adjCells])
   useEffect(() => {
+    if (!start) return
     const num = Object.values(adjValues)
       .map((c) => (c === "1" ? 1 : 0))
       .reduce((acc: number, curr) => acc + curr, 0)
     update(num)
   }, [adjValues])
   useLayoutEffect(() => {
-    if (adj[0] === null) {
+    if (adj.some((e) => e === null)) {
       return
     }
     setStart(true)
@@ -117,9 +127,9 @@ const initialArray = (size) => {
     .flat()
 }
 const roopFn = (fn, time) => {
-  // return setTimeout(fn, time)
+  return setTimeout(fn, time)
   // @ts-ignore
-  return requestIdleCallback(fn, { timeout: time })
+  // return requestIdleCallback(fn, { timeout: time })
 }
 const useTimerEffect = () => {
   const [time, setTimer] = useState(new Date().getTime())
@@ -142,7 +152,7 @@ const useTimerEffect = () => {
 
 const App = () => {
   const { time, diff } = useTimerEffect()
-  const [size, setSize] = useState(4)
+  const [size, setSize] = useState(10)
   const arr = useMemo(() => {
     const arr = initialArray(size)
     return arr
