@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
 
-const size = 30
-const cellPx = 10
+const size = 100
+const cellPx = 4
 
 const next = (val, adj) => {
   const num = adj.reduce((acc, curr) => acc + curr, 0)
@@ -30,30 +30,23 @@ const CellItem = styled.div`
   background: ${({ value }) => (value ? "black" : "white")};
 `
 const getId = (x, y) => `cell-${x}_${y}`
+
+const adjCellIds = (x,y) => [x, x + 1, x - 1]
+  .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
+  .flat()
+  .filter(([xx,yy]) => !(xx === x && yy === y))
+
 const Cell = ({ x, y, initial, time }) => {
   const { value, update } = useCell(initial)
   const id = getId(x, y)
   useEffect(() => {
-    const adj = [x, x + 1, x - 1]
-      .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
-      .flat()
-      .map(([x, y]) => getId(x, y))
-      .filter((cellId) => id !== cellId)
-      .map((cellId) => {
-        return document.getElementById(cellId)
-      })
-      .map((elm) => {
-        if (!elm) {
-          return 0
-        }
-        return elm.dataset.value === "1" ? 1 : 0
-      })
+    const adj = adjCellIds(x,y)
+      .map(([x, y]) => document.getElementById(getId(x, y)))
+      .map((elm) => elm && elm.dataset.value === "1" ? 1 : 0)
     update(adj)
   }, [time])
   return (
-    <CellItem id={id} data-value={value} value={value}>
-      {/* {value} */}
-    </CellItem>
+    <CellItem id={id} data-value={value} value={value} />
   )
 }
 
@@ -73,12 +66,14 @@ const App = () => {
   const [time, setTimer] = useState(new Date().getTime())
   useEffect(() => {
     const loop = () => {
-      requestIdleCallback(() => {
+      // requestIdleCallback(() => {
+      setTimeout(() => {
         setTimer(new Date().getTime())
         loop()
-      }, {
-        timeout: 100
-      })
+      }, 1000)
+      //  {
+      //   timeout: 100
+      // })
     }
     loop()
   }, [])
