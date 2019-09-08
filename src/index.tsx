@@ -117,7 +117,7 @@ const useTimerEffect = () => {
 
 const App = () => {
   const { time, diff } = useTimerEffect()
-  const [size, setSize] = useState(10)
+  const [size, setSize] = useState(30)
   const arr = useMemo(() => {
     const arr = initialArray(size)
     return arr
