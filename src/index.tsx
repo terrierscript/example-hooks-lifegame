@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
 
-const size = 100
+const size = 30
 const cellPx = 4
 
 const next = (val, adj) => {
@@ -31,31 +31,30 @@ const CellItem = styled.div`
 `
 const getId = (x, y) => `cell-${x}_${y}`
 
-const adjCellIds = (x,y) => [x, x + 1, x - 1]
-  .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
-  .flat()
-  .filter(([xx,yy]) => !(xx === x && yy === y))
+const adjCellIds = (x, y) =>
+  [x, x + 1, x - 1]
+    .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
+    .flat()
+    .filter(([xx, yy]) => !(xx === x && yy === y))
 
 const Cell = ({ x, y, initial, time }) => {
   const { value, update } = useCell(initial)
   const id = getId(x, y)
   useEffect(() => {
-    const adj = adjCellIds(x,y)
+    const adj = adjCellIds(x, y)
       .map(([x, y]) => document.getElementById(getId(x, y)))
-      .map((elm) => elm && elm.dataset.value === "1" ? 1 : 0)
+      .map((elm) => (elm && elm.dataset.value === "1" ? 1 : 0))
     update(adj)
   }, [time])
-  return (
-    <CellItem id={id} data-value={value} value={value} />
-  )
+  return <CellItem id={id} data-value={value} value={value} />
 }
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(${size}, ${cellPx}px);
 `
-const App = () => {
-  const arr = Array(size)
+const initialArray = (size) =>
+  Array(size)
     .fill([])
     .map((v) =>
       Array(size)
@@ -63,30 +62,39 @@ const App = () => {
         .map(() => (Math.random() > 0.5 ? 1 : 0))
     )
 
+const useTimerEffect = () => {
   const [time, setTimer] = useState(new Date().getTime())
   useEffect(() => {
     const loop = () => {
-      // requestIdleCallback(() => {
-      setTimeout(() => {
-        setTimer(new Date().getTime())
-        loop()
-      }, 1000)
-      //  {
-      //   timeout: 100
-      // })
+      // @ts-ignore
+      requestIdleCallback(
+        () => {
+          setTimer(new Date().getTime())
+          loop()
+        },
+        {
+          timeout: 100
+        }
+      )
     }
     loop()
   }, [])
+  return time
+}
+
+const App = () => {
+  const time = useTimerEffect()
+  const arr = initialArray(size)
   return (
     <div>
-    frame: {time}
-    <Grid>
-      {arr.map((ys, y) =>
-        ys.map((v, x) => (
-          <Cell time={time} x={x} y={y} key={`${y}_${x}`} initial={v}></Cell>
-        ))
+      frame: {time}
+      <Grid>
+        {arr.map((ys, y) =>
+          ys.map((v, x) => (
+            <Cell time={time} x={x} y={y} key={`${y}_${x}`} initial={v}></Cell>
+          ))
         )}
-    </Grid>
+      </Grid>
     </div>
   )
 }
