@@ -102,11 +102,6 @@ const CellMapContext = createContext<ReturnType<typeof useCellMap>>({
   diff: 0
 })
 
-// const getId = (x, y) => `cell-${x}_${y}`
-
-// const validCell = (xx, yy, size) =>
-//   !(xx < 0) && !(yy < 0) && !(size <= xx) && !(size <= yy)
-
 const adjCells = (x, y, size) =>
   [x, x + 1, x - 1]
     .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
@@ -114,21 +109,8 @@ const adjCells = (x, y, size) =>
     .filter(([xx, yy]) => !(xx === x && yy === y)) // && validCell(xx, yy, size))
 
 const Cell = ({ x, y, size }) => {
-  const {
-    // updateValue,
-    getValue
-    //  time
-  } = useContext(CellMapContext)
+  const { getValue } = useContext(CellMapContext)
   const value = getValue(x, y)
-  // const adjCellSize = useMemo(() => adjCells(x, y, size), [x, y, size])
-  // useLayoutEffect(() => {
-  //   const vs = adjCellSize.map(([x, y]) => getValue(x, y))
-  //   const num = vs
-  //     .map((c) => (c === 1 ? 1 : 0))
-  //     .reduce((acc: number, curr) => acc + curr, 0)
-  //   const nextValue = next(value, num) ? 1 : 0
-  //   updateValue({ x, y, v: nextValue })
-  // }, [time])
   return <CellItem value={value} />
 }
 
