@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo, useLayoutEffect } from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
 
-const size = 30
+const size = 50
 const cellPx = 4
 
-const next = (val, adj) => {
-  const num = adj.reduce((acc, curr) => acc + curr, 0)
+const next = (val, num) => {
   if (val) {
     if (num < 2) return false
     if (3 < num) return false
@@ -18,8 +17,8 @@ const next = (val, adj) => {
 }
 const useCell = (initial) => {
   const [value, setValue] = useState(initial)
-  const update = (adj) => {
-    setValue(next(value, adj) ? 1 : 0)
+  const update = (num) => {
+    setValue(next(value, num) ? 1 : 0)
   }
   return { value, update }
 }
@@ -31,21 +30,51 @@ const CellItem = styled.div`
 `
 const getId = (x, y) => `cell-${x}_${y}`
 
-const adjCellIds = (x, y) =>
+const validCell = (xx, yy, size) =>
+  !(xx < 0) && !(yy < 0) && !(size <= xx) && !(size <= yy)
+
+const adjCellIds = (x, y, size) =>
   [x, x + 1, x - 1]
     .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
     .flat()
-    .filter(([xx, yy]) => !(xx === x && yy === y))
+    .filter(([xx, yy]) => !(xx === x && yy === y) && validCell(xx, yy, size))
 
 const Cell = ({ x, y, initial, time }) => {
+  const [start, setStart] = useState(false)
   const { value, update } = useCell(initial)
   const id = getId(x, y)
-  useEffect(() => {
-    const adj = adjCellIds(x, y)
-      .map(([x, y]) => document.getElementById(getId(x, y)))
-      .map((elm) => (elm && elm.dataset.value === "1" ? 1 : 0))
-    update(adj)
-  }, [time])
+  const adjCells = useMemo(
+    () => adjCellIds(x, y, size).map(([x, y]) => getId(x, y)),
+    [x, y]
+  )
+
+  // console.log(adjCells)
+  const adj = useMemo(() => {
+    return adjCells
+      .map((id) => document.getElementById(id))
+      .map((elm) => elm && elm.dataset.value)
+    //  === "1" ? 1 : 0))
+  }, [time, adjCells])
+  useLayoutEffect(() => {
+    if (adj[0] === null) {
+      return
+    }
+    setStart(true)
+  }, [start, adj])
+  const num = useMemo(
+    () =>
+      adj
+        .map((c) => (c === "1" ? 1 : 0))
+        .reduce((acc: number, curr) => acc + curr, 0),
+    [adj]
+  )
+
+  // console.log(x, y, adj)
+  useLayoutEffect(() => {
+    if (start) {
+      update(num)
+    }
+  }, [start, num])
   return <CellItem id={id} data-value={value} value={value} />
 }
 
@@ -62,20 +91,19 @@ const initialArray = (size) =>
         .map(() => (Math.random() > 0.5 ? 1 : 0))
     )
 
+const roopFn = (fn, time) => {
+  // return setTimeout(fn, time)
+  // @ts-ignore
+  return requestIdleCallback(fn, { timeout: time })
+}
 const useTimerEffect = () => {
   const [time, setTimer] = useState(new Date().getTime())
-  useEffect(() => {
+  useLayoutEffect(() => {
     const loop = () => {
-      // @ts-ignore
-      requestIdleCallback(
-        () => {
-          setTimer(new Date().getTime())
-          loop()
-        },
-        {
-          timeout: 100
-        }
-      )
+      roopFn(() => {
+        setTimer(new Date().getTime())
+        loop()
+      }, 1000)
     }
     loop()
   }, [])
