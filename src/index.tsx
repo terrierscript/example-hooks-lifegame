@@ -76,18 +76,23 @@ const App = () => {
       requestIdleCallback(() => {
         setTimer(new Date().getTime())
         loop()
+      }, {
+        timeout: 100
       })
     }
     loop()
   }, [])
   return (
+    <div>
+    frame: {time}
     <Grid>
       {arr.map((ys, y) =>
         ys.map((v, x) => (
           <Cell time={time} x={x} y={y} key={`${y}_${x}`} initial={v}></Cell>
         ))
-      )}
+        )}
     </Grid>
+    </div>
   )
 }
 
