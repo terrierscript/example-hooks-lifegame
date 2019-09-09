@@ -77,6 +77,7 @@ const Cell = ({ x, y, initial, time, size }) => {
   return <CellItem id={id} data-value={value} value={value} />
 }
 
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(${({ size }) => size}, ${cellPx}px);
