@@ -1,101 +1,24 @@
-import React, { useState, useEffect, useMemo, useLayoutEffect } from "react"
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useLayoutEffect,
+  createContext,
+  useContext,
+  useCallback
+} from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
-
+import module from "../rust-life/Cargo.toml"
+// import module from "./rust-life/src/lib.rs"
 const cellPx = 4
-
-const next = (val, num) => {
-  if (val) {
-    if (num < 2) return false
-    if (3 < num) return false
-    return true
-  } else {
-    if (num === 3) return true
-    return false
-  }
-}
-const useCell = (initial) => {
-  const [value, setValue] = useState(initial)
-  const update = (num) => {
-    setValue(next(value, num) ? 1 : 0)
-  }
-  return { value, update }
-}
 
 const CellItem = styled.div`
   width: ${cellPx}px;
   height: ${cellPx}px;
   background: ${({ value }) => (value ? "black" : "white")};
+  /* border: 1px solid red; */
 `
-const getId = (x, y) => `cell-${x}_${y}`
-
-const validCell = (xx, yy, size) =>
-  !(xx < 0) && !(yy < 0) && !(size <= xx) && !(size <= yy)
-
-const adjCellIds = (x, y, size) =>
-  [x, x + 1, x - 1]
-    .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
-    .flat()
-    .filter(([xx, yy]) => !(xx === x && yy === y) && validCell(xx, yy, size))
-
-const Cell = ({ x, y, initial, time, size }) => {
-  const [start, setStart] = useState(false)
-  const { value, update } = useCell(initial)
-  const id = getId(x, y)
-  const adjCells = useMemo(
-    () => adjCellIds(x, y, size).map(([x, y]) => getId(x, y)),
-    [x, y, size]
-  )
-
-  // console.log(adjCells)
-  const adj = useMemo(() => {
-    return adjCells
-      .map((id) => document.getElementById(id))
-      .map((elm) => elm && elm.dataset.value)
-    //  === "1" ? 1 : 0))
-  }, [time, adjCells])
-  useLayoutEffect(() => {
-    if (adj[0] === null) {
-      return
-    }
-    setStart(true)
-  }, [start, adj])
-  const num = useMemo(
-    () =>
-      adj
-        .map((c) => (c === "1" ? 1 : 0))
-        .reduce((acc: number, curr) => acc + curr, 0),
-    [adj]
-  )
-
-  // console.log(x, y, adj)
-  useLayoutEffect(() => {
-    if (start) {
-      update(num)
-    }
-  }, [start, num])
-  return <CellItem id={id} data-value={value} value={value} />
-}
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(${({ size }) => size}, ${cellPx}px);
-`
-const initialArray = (size) => {
-  return Array(size)
-    .fill([])
-    .map((v, y) => {
-      return Array(size)
-        .fill(0)
-        .map((_, x) => ({ x, y, v: Math.random() > 0.5 ? 1 : 0 }))
-    })
-    .flat()
-}
-const roopFn = (fn, time) => {
-  // return setTimeout(fn, time)
-  // @ts-ignore
-  return requestIdleCallback(fn, { timeout: time })
-}
 const useTimerEffect = () => {
   const [time, setTimer] = useState(new Date().getTime())
   const [diff, setDiff] = useState(0)
@@ -108,20 +31,94 @@ const useTimerEffect = () => {
           return f
         })
         loop()
-      }, 1000)
+      }, 100)
     }
     loop()
   }, [])
   return { time, diff }
 }
 
+const useCellMap = (size) => {
+  const { time, diff } = useTimerEffect()
+
+  const [cellMap, setMap] = useState(() => {
+    const i = initialArray(size)
+    // console.log(i)
+    return i
+  })
+
+  useEffect(() => {
+    setMap(initialArray(size))
+  }, [size])
+
+  const getValue = useCallback(
+    (x, y) => {
+      const idx = y * size + x
+      // if (idx > cellMap.length) {
+      //   throw new Error(`${x}_${y} ${cellMap.length}`)
+      // }
+      return !!cellMap[idx]
+    },
+    [cellMap]
+  )
+
+  const getXY = (i) => {
+    const d = [i % size, Math.floor(i / size)]
+    return d
+  }
+
+  // const memo = useMemo(() => Object.values(cellMap), [cellMap])
+  useEffect(() => {
+    const newMap = module.main(size, cellMap)
+    setMap(Array.from(newMap))
+  }, [time])
+  return { cellMap, getValue, time, diff, getXY }
+}
+
+const CellMapContext = createContext<ReturnType<typeof useCellMap>>(
+  // @ts-ignore
+  {}
+)
+
+const _Cell = ({ x, y }) => {
+  const { getValue } = useContext(CellMapContext)
+  const value = getValue(x, y)
+  return <CellItem value={value} />
+}
+
+const Cell = _Cell
+// const Cell = React.memo(_Cell)
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(${({ size }) => size}, ${cellPx}px);
+`
+const initialArray = (size) => {
+  return Array(size * size)
+    .fill(1)
+    .map(() => (Math.random() > 0.5 ? 1 : 0))
+}
+
+const roopFn = (fn, time) => {
+  // return setTimeout(fn, time)
+  // @ts-ignore
+  return requestIdleCallback(fn, { timeout: time })
+}
+
 const App = () => {
+<<<<<<< HEAD
   const { time, diff } = useTimerEffect()
   const [size, setSize] = useState(30)
   const arr = useMemo(() => {
     const arr = initialArray(size)
     return arr
   }, [size])
+=======
+  const [size, setSize] = useState(30)
+  const cellMapCtx = useCellMap(size)
+  const { time, diff, getXY } = cellMapCtx
+
+>>>>>>> rust
   return (
     <div>
       <div>
@@ -140,18 +137,16 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
-      <Grid size={size} key={size}>
-        {arr.map(({ x, y, v }) => (
-          <Cell
-            time={time}
-            x={x}
-            y={y}
-            size={size}
-            key={`${size}_${y}_${x}`}
-            initial={v}
-          ></Cell>
-        ))}
-      </Grid>
+      <CellMapContext.Provider value={cellMapCtx}>
+        <Grid size={size} key={size}>
+          {Array(size * size)
+            .fill(0)
+            .map((_, i) => {
+              const [x, y] = getXY(i)
+              return <Cell x={x} y={y} key={i}></Cell>
+            })}
+        </Grid>
+      </CellMapContext.Provider>
     </div>
   )
 }
