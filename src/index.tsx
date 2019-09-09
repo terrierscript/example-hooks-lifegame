@@ -70,6 +70,7 @@ const useCellMap = (size) => {
   // const memo = useMemo(() => Object.values(cellMap), [cellMap])
   useEffect(() => {
     const newMap = module.main(size, cellMap)
+    // @ts-ignore
     setMap(Array.from(newMap))
   }, [time])
   return { cellMap, getValue, time, diff, getXY }
