@@ -108,11 +108,23 @@ const roopFn = (fn, time) => {
   return requestIdleCallback(fn, { timeout: time })
 }
 
+const chunk = (input, size) => {
+  return input.reduce((arr, item, idx) => {
+    return idx % size === 0
+      ? [...arr, [item]]
+      : [...arr.slice(0, -1), [...arr.slice(-1)[0], item]]
+  }, [])
+}
+const cellText = (cellMap, size) => {
+  return chunk(cellMap, size)
+    .map((c) => c.join(""))
+    .join("\n")
+}
 const App = () => {
   const [size, setSize] = useState(30)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff } = cellMapCtx
-
+  const ct = cellText(cellMap, size)
   return (
     <div>
       <div>
@@ -131,12 +143,15 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
+      <pre>
+        <code>{ct}</code>
+      </pre>
       {/* <CellMapContext.Providear value={cellMapCtx}> */}
-      <Grid size={size} key={size}>
+      {/* <Grid size={size} key={size}>
         {cellMap.map((v, i) => {
           return <CellItem key={i} value={v} />
         })}
-      </Grid>
+      </Grid> */}
       {/* </CellMapContext.Provider> */}
     </div>
   )
