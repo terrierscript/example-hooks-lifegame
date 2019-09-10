@@ -2,12 +2,13 @@ import React, { useState, useEffect, useMemo } from "react"
 import { render } from "react-dom"
 import { Cell, Grid } from "./Cell"
 import { CellMapContext, useCellMap } from "./useCellMap"
+import { cellText } from "./preText"
 
 const App = () => {
-  const [size, setSize] = useState(30)
+  const [size, setSize] = useState(100)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff } = cellMapCtx
-
+  const ct = cellText(cellMap, size)
   return (
     <div>
       <div>
@@ -26,13 +27,9 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
-      <CellMapContext.Provider value={cellMapCtx}>
-        <Grid size={size} key={size}>
-          {Object.values(cellMap).map(({ x, y }) => (
-            <Cell x={x} y={y} size={size} key={`${size}_${y}_${x}`}></Cell>
-          ))}
-        </Grid>
-      </CellMapContext.Provider>
+      <pre>
+        <code>{ct}</code>
+      </pre>
     </div>
   )
 }
