@@ -8,7 +8,8 @@ import React, {
   useCallback
 } from "react"
 import { render } from "react-dom"
-import styled from "styled-components"
+import styled from "@emotion/styled"
+
 import module from "../rust-life/Cargo.toml"
 // import module from "./rust-life/src/lib.rs"
 const cellPx = 4
@@ -52,12 +53,13 @@ const useCellMap = (size) => {
   }, [size])
 
   const getValue = useCallback(
-    (x, y) => {
-      const idx = y * size + x
-      // if (idx > cellMap.length) {
-      //   throw new Error(`${x}_${y} ${cellMap.length}`)
-      // }
-      return !!cellMap[idx]
+    (i) => {
+      return cellMap[i]
+      // const idx = y * size + x
+      // // if (idx > cellMap.length) {
+      // //   throw new Error(`${x}_${y} ${cellMap.length}`)
+      // // }
+      // return !!cellMap[idx]
     },
     [cellMap]
   )
@@ -81,13 +83,13 @@ const CellMapContext = createContext<ReturnType<typeof useCellMap>>(
   {}
 )
 
-const _Cell = ({ x, y }) => {
-  const { getValue } = useContext(CellMapContext)
-  const value = getValue(x, y)
-  return <CellItem value={value} />
-}
+// const _Cell = ({ x, y,value }) => {
+//   // const { getValue } = useContext(CellMapContext)
+//   const value = getValue(x, y)
+//   return <CellItem value={value} />
+// }
 
-const Cell = _Cell
+// const Cell = _Cell
 // const Cell = React.memo(_Cell)
 
 const Grid = styled.div`
@@ -107,19 +109,10 @@ const roopFn = (fn, time) => {
 }
 
 const App = () => {
-<<<<<<< HEAD
-  const { time, diff } = useTimerEffect()
-  const [size, setSize] = useState(30)
-  const arr = useMemo(() => {
-    const arr = initialArray(size)
-    return arr
-  }, [size])
-=======
   const [size, setSize] = useState(30)
   const cellMapCtx = useCellMap(size)
-  const { time, diff, getXY } = cellMapCtx
+  const { cellMap, time, diff } = cellMapCtx
 
->>>>>>> rust
   return (
     <div>
       <div>
@@ -138,16 +131,13 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
-      <CellMapContext.Provider value={cellMapCtx}>
-        <Grid size={size} key={size}>
-          {Array(size * size)
-            .fill(0)
-            .map((_, i) => {
-              const [x, y] = getXY(i)
-              return <Cell x={x} y={y} key={i}></Cell>
-            })}
-        </Grid>
-      </CellMapContext.Provider>
+      {/* <CellMapContext.Providear value={cellMapCtx}> */}
+      <Grid size={size} key={size}>
+        {cellMap.map((v, i) => {
+          return <CellItem key={i} value={v} />
+        })}
+      </Grid>
+      {/* </CellMapContext.Provider> */}
     </div>
   )
 }
