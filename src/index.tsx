@@ -85,7 +85,10 @@ const Cell = ({ x, y, initial, time, size }) => {
     }
   }, [start, num])
   const props = cellProps(x, y, value)
-  console.log(props)
+  if(x == 10 &&y==10){
+
+    console.log(props)
+  }
   return <Rect {...props} />
 }
 
