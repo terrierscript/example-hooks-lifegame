@@ -9,6 +9,7 @@ import React, {
 } from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
+import { Stage, Layer, Rect } from "react-konva"
 
 const cellPx = 4
 
@@ -69,12 +70,10 @@ const useCellMap = (size) => {
     },
     [setMap]
   )
-  const getValue = useCallback(
-    (x, y) => {
-      return (cellMap[`${x}_${y}`] || {}).v
-    },
-    [cellMap]
-  )
+  const getValue = (x, y) => {
+    // console.log(x, y, cellMap[`${x}_${y}`], (cellMap[`${x}_${y}`] || {}).v)
+    return (cellMap[`${x}_${y}`] || {}).v
+  }
   const memo = useMemo(() => Object.values(cellMap), [cellMap])
   useEffect(() => {
     setMap(
@@ -92,27 +91,28 @@ const useCellMap = (size) => {
   return { cellMap, updateValue, getValue, time, diff }
 }
 
-const CellMapContext = createContext<ReturnType<typeof useCellMap>>({
-  cellMap: {},
-  updateValue: () => {},
-  getValue: (x: number, y: number) => {
-    return 0
-  },
-  time: 0,
-  diff: 0
-})
+const CellMapContext = React.createContext<ReturnType<typeof useCellMap>>(
+  // @ts-ignore
+  null
+  //   {
+  //   cellMap: {},
+  //   updateValue: () => {},
+
+  //   getValue: (x: number, y: number) => {
+  //     console.error("Not init")
+  //     // throw new Error("not initialized")
+  //     return 0
+  //   },
+  //   time: 0,
+  //   diff: 0
+  // }
+)
 
 const adjCells = (x, y, size) =>
   [x, x + 1, x - 1]
     .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
     .flat()
     .filter(([xx, yy]) => !(xx === x && yy === y)) // && validCell(xx, yy, size))
-
-const Cell = ({ x, y, size }) => {
-  const { getValue } = useContext(CellMapContext)
-  const value = getValue(x, y)
-  return <CellItem value={value} />
-}
 
 const Grid = styled.div`
   display: grid;
@@ -134,16 +134,16 @@ const initialArray = (size) => {
     .flat()
 }
 const roopFn = (fn, time) => {
+  // return setTimeout(fn, 1000)
   // return setTimeout(fn, time)
   // @ts-ignore
   return requestIdleCallback(fn, { timeout: time })
 }
 
 const App = () => {
-  const [size, setSize] = useState(30)
+  const [size, setSize] = useState(80)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff } = cellMapCtx
-
   return (
     <div>
       <div>
@@ -162,15 +162,46 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
+
       <CellMapContext.Provider value={cellMapCtx}>
-        <Grid size={size} key={size}>
-          {Object.values(cellMap).map(({ x, y }) => (
-            <Cell x={x} y={y} size={size} key={`${size}_${y}_${x}`}></Cell>
-          ))}
-        </Grid>
+        <Stage width={size * 4} height={size * 4}>
+          <Layer>
+            {Object.values(cellMap).map(({ x, y, v }) => (
+              <Cell
+                // time={time}
+                x={x}
+                y={y}
+                v={v}
+                size={size}
+                key={`${size}_${y}_${x}`}
+                // initial={v}
+              ></Cell>
+            ))}
+          </Layer>
+        </Stage>
       </CellMapContext.Provider>
     </div>
   )
+}
+
+const cellProps = (x, y, v) => {
+  return {
+    width: 4,
+    height: 4,
+    x: x * 4,
+    y: y * 4,
+    fill: v ? "black" : "white"
+  }
+}
+
+const Cell = ({ x, y, v, size }) => {
+  // console.log(x, y, value)
+
+  const prop = cellProps(x, y, v)
+  if (x == 5 && y == 5) {
+    // console.log(prop, value)
+  }
+  return <Rect {...prop} />
 }
 
 render(<App />, document.querySelector("#container"))
