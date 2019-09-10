@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useLayoutEffect } from "react"
 import { render } from "react-dom"
 import styled from "styled-components"
+import { Stage, Layer, Rect } from "react-konva"
 
 const cellPx = 4
 
@@ -38,6 +39,15 @@ const adjCellIds = (x, y, size) =>
     .flat()
     .filter(([xx, yy]) => !(xx === x && yy === y) && validCell(xx, yy, size))
 
+const cellProps = (x, y, v) => {
+  return {
+    width: 4,
+    height: 4,
+    x: x * 4,
+    y: y * 4,
+    fill: v ? "black" : "white"
+  }
+}
 const Cell = ({ x, y, initial, time, size }) => {
   const [start, setStart] = useState(false)
   const { value, update } = useCell(initial)
@@ -74,9 +84,10 @@ const Cell = ({ x, y, initial, time, size }) => {
       update(num)
     }
   }, [start, num])
-  return <CellItem id={id} data-value={value} value={value} />
+  const props = cellProps(x, y, value)
+  console.log(props)
+  return <Rect {...props} />
 }
-
 
 const Grid = styled.div`
   display: grid;
@@ -141,18 +152,20 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
-      <Grid size={size} key={size}>
-        {arr.map(({ x, y, v }) => (
-          <Cell
-            time={time}
-            x={x}
-            y={y}
-            size={size}
-            key={`${size}_${y}_${x}`}
-            initial={v}
-          ></Cell>
-        ))}
-      </Grid>
+      <Stage width={size * 4} height={size * 4}>
+        <Layer>
+          {arr.map(({ x, y, v }) => (
+            <Cell
+              time={time}
+              x={x}
+              y={y}
+              size={size}
+              key={`${size}_${y}_${x}`}
+              initial={v}
+            ></Cell>
+          ))}
+        </Layer>
+      </Stage>
     </div>
   )
 }
