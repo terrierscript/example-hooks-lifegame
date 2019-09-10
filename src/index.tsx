@@ -6,55 +6,56 @@ import React, {
   createContext,
   useContext,
   useCallback
-} from "react"
-import { render } from "react-dom"
-import styled from "@emotion/styled"
+} from "react";
+import { render } from "react-dom";
+import styled from "@emotion/styled";
+import { Stage, Layer, Rect } from "react-konva";
 
-import module from "../rust-life/Cargo.toml"
+import module from "../rust-life/Cargo.toml";
 // import module from "./rust-life/src/lib.rs"
-const cellPx = 4
+const cellPx = 4;
 
 const CellItem = styled.div`
   width: ${cellPx}px;
   height: ${cellPx}px;
   background: ${({ value }) => (value ? "black" : "white")};
   /* border: 1px solid red; */
-`
+`;
 const useTimerEffect = () => {
-  const [time, setTimer] = useState(new Date().getTime())
-  const [diff, setDiff] = useState(0)
+  const [time, setTimer] = useState(new Date().getTime());
+  const [diff, setDiff] = useState(0);
   useLayoutEffect(() => {
     const loop = () => {
       roopFn(() => {
-        const f = new Date().getTime()
-        setTimer((time) => {
-          setDiff(f - time)
-          return f
-        })
-        loop()
-      }, 100)
-    }
-    loop()
-  }, [])
-  return { time, diff }
-}
+        const f = new Date().getTime();
+        setTimer(time => {
+          setDiff(f - time);
+          return f;
+        });
+        loop();
+      }, 1000);
+    };
+    loop();
+  }, []);
+  return { time, diff };
+};
 
-const useCellMap = (size) => {
-  const { time, diff } = useTimerEffect()
+const useCellMap = size => {
+  const { time, diff } = useTimerEffect();
 
   const [cellMap, setMap] = useState(() => {
-    const i = initialArray(size)
+    const i = initialArray(size);
     // console.log(i)
-    return i
-  })
+    return i;
+  });
 
   useEffect(() => {
-    setMap(initialArray(size))
-  }, [size])
+    setMap(initialArray(size));
+  }, [size]);
 
   const getValue = useCallback(
-    (i) => {
-      return cellMap[i]
+    i => {
+      return cellMap[i];
       // const idx = y * size + x
       // // if (idx > cellMap.length) {
       // //   throw new Error(`${x}_${y} ${cellMap.length}`)
@@ -62,26 +63,26 @@ const useCellMap = (size) => {
       // return !!cellMap[idx]
     },
     [cellMap]
-  )
+  );
 
-  const getXY = (i) => {
-    const d = [i % size, Math.floor(i / size)]
-    return d
-  }
+  const getXY = i => {
+    const d = [i % size, Math.floor(i / size)];
+    return d;
+  };
 
   // const memo = useMemo(() => Object.values(cellMap), [cellMap])
   useEffect(() => {
-    const newMap = module.main(size, cellMap)
+    const newMap = module.main(size, cellMap);
     // @ts-ignore
-    setMap(Array.from(newMap))
-  }, [time])
-  return { cellMap, getValue, time, diff, getXY }
-}
+    setMap(Array.from(newMap));
+  }, [time]);
+  return { cellMap, getValue, time, diff, getXY };
+};
 
 const CellMapContext = createContext<ReturnType<typeof useCellMap>>(
   // @ts-ignore
   {}
-)
+);
 
 // const _Cell = ({ x, y,value }) => {
 //   // const { getValue } = useContext(CellMapContext)
@@ -95,23 +96,23 @@ const CellMapContext = createContext<ReturnType<typeof useCellMap>>(
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(${({ size }) => size}, ${cellPx}px);
-`
-const initialArray = (size) => {
+`;
+const initialArray = size => {
   return Array(size * size)
     .fill(1)
-    .map(() => (Math.random() > 0.5 ? 1 : 0))
-}
+    .map(() => (Math.random() > 0.5 ? 1 : 0));
+};
 
 const roopFn = (fn, time) => {
   // return setTimeout(fn, time)
   // @ts-ignore
-  return requestIdleCallback(fn, { timeout: time })
-}
+  return requestIdleCallback(fn, { timeout: time });
+};
 
 const App = () => {
-  const [size, setSize] = useState(30)
-  const cellMapCtx = useCellMap(size)
-  const { cellMap, time, diff } = cellMapCtx
+  const [size, setSize] = useState(30);
+  const cellMapCtx = useCellMap(size);
+  const { cellMap, time, diff, getXY } = cellMapCtx;
 
   return (
     <div>
@@ -123,7 +124,7 @@ const App = () => {
         <input
           type="number"
           value={size}
-          onChange={(e) => setSize(Number(e.target.value))}
+          onChange={e => setSize(Number(e.target.value))}
         ></input>
         <button onClick={() => setSize(10)}>cell: 10</button>
         <button onClick={() => setSize(30)}>cell: 30</button>
@@ -131,15 +132,49 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
-      {/* <CellMapContext.Providear value={cellMapCtx}> */}
-      <Grid size={size} key={size}>
-        {cellMap.map((v, i) => {
-          return <CellItem key={i} value={v} />
-        })}
-      </Grid>
-      {/* </CellMapContext.Provider> */}
-    </div>
-  )
-}
 
-render(<App />, document.querySelector("#container"))
+      <CellMapContext.Provider value={cellMapCtx}>
+        <Stage width={size * 4} height={size * 4}>
+          <Layer>
+            {cellMap.map((v, i) => {
+              const [x, y] = getXY(i);
+              return (
+                <Cell
+                key={i}
+                  // time={time}
+                  x={x}
+                  y={y}
+                  v={v}
+                  size={size}
+                  // initial={v}
+                ></Cell>
+              );
+            })}
+          </Layer>
+        </Stage>
+      </CellMapContext.Provider>
+    </div>
+  );
+};
+
+const cellProps = (x, y, v) => {
+  return {
+    width: 4,
+    height: 4,
+    x: x * 4,
+    y: y * 4,
+    fill: v ? "black" : "white"
+  };
+};
+
+const Cell = ({ x, y, v, size }) => {
+  // console.log(x, y, value)
+
+  const prop = cellProps(x, y, v);
+  if (x == 5 && y == 5) {
+    // console.log(prop, value)
+  }
+  return <Rect {...prop} />;
+};
+
+render(<App />, document.querySelector("#container"));
