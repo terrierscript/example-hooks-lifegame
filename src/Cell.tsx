@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useLayoutEffect } from "react"
 import { useCell } from "./useCell"
 import styled from "styled-components"
+import * as THREE from "three"
 // import styled from "@emotion/styled"
 export const cellPx = 4
 
@@ -90,3 +91,13 @@ export const Grid = styled.div<any>`
   display: grid;
   grid-template-columns: repeat(${({ size }) => size}, ${cellPx}px);
 `
+
+export const CellMesh = ({ x, y }) => {
+  const px = 1
+  return (
+    <mesh position={[x * px, y * px, 0]}>
+      <planeGeometry attach="geometry" args={[1, 1, 1]} />
+      <meshNormalMaterial attach="material" color="hotpink" />
+    </mesh>
+  )
+}

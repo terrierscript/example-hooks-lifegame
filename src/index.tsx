@@ -1,7 +1,8 @@
 import React, { useState, useMemo, createContext } from "react"
 import { render } from "react-dom"
-import { Cell, Grid, CellItem } from "./Cell"
+import { Cell, Grid, CellItem, CellMesh } from "./Cell"
 import { useCellMap } from "./useCellMap"
+import { Canvas } from "react-three-fiber"
 
 const App = () => {
   const [size, setSize] = useState(100)
@@ -27,15 +28,17 @@ const App = () => {
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
       {/* <CellMapContext.Providear value={cellMapCtx}> */}
-      <Grid size={size} key={size}>
+      <Canvas camera={{ position: [50, 50, 100] }}>
+        {/* <Grid size={size} key={size}> */}
         {cellMap.map((v, i) => {
           if (!v) {
             return null
           }
           const [x, y] = getXY(i)
-          return <CellItem key={i} x={x} y={y} value={v} />
+          return <CellMesh key={i} x={x} y={y} value={v} />
         })}
-      </Grid>
+        {/* </Grid> */}
+      </Canvas>
       {/* </CellMapContext.Provider> */}
     </div>
   )

@@ -14,7 +14,6 @@ export const useTimerEffect = () => {
     return () => {}
   })
   useEffect(() => {
-    // return
     const loop = () => {
       const clearFn = roopFn(() => {
         // console.log(uuid)
