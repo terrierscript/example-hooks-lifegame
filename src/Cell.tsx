@@ -32,9 +32,10 @@ export const Cell = ({ x, y, initial, time, size }) => {
     //  === "1" ? 1 : 0))
   }, [time, adjCells])
   useLayoutEffect(() => {
-    if (adj[0] === null) {
+    if (!adj || adj.every((a) => a === null)) {
       return
     }
+
     setStart(true)
   }, [start, adj])
   const num = useMemo(
