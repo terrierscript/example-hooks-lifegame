@@ -5,15 +5,14 @@ import module from "../rust-life/Cargo.toml"
 
 export const useCellMap = (size) => {
   const { time, diff } = useTimerEffect()
+
   const [cellMap, setMap] = useState(() => {
     const i = initialArray(size)
     return i
   })
 
   useEffect(() => {
-    console.log("a")
     setMap(() => initialArray(size))
-    console.log("b")
   }, [size])
 
   const getValue = useCallback(

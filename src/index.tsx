@@ -4,7 +4,7 @@ import { Cell, Grid, CellItem } from "./Cell"
 import { useCellMap } from "./useCellMap"
 
 const App = () => {
-  const [size, setSize] = useState(100)
+  const [size, setSize] = useState(10)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff, getXY } = cellMapCtx
 
