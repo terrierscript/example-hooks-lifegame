@@ -22,14 +22,20 @@ const next = (val, num) => {
 export const useCellMap = (size) => {
   const { time, diff } = useTimerEffect()
 
-  const [cellMap, setMap] = useState(() => {
+  const initCells = () => {
     const arr = initialArray(size)
     return Object.fromEntries(
       arr.map((a) => {
         return [a.key, { x: a.x, y: a.y, v: a.v }]
       })
     )
+  }
+  const [cellMap, setMap] = useState(() => {
+    return initCells()
   })
+  useEffect(() => {
+    setMap(initCells())
+  }, [size])
 
   const updateValue = useCallback(
     ({ x, y, v }) => {

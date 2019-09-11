@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { render } from "react-dom"
-import { Cell, Grid } from "./Cell"
+import { Cell, Grid, CellItem } from "./Cell"
 import { CellMapContext, useCellMap } from "./useCellMap"
 
 const App = () => {
   const [size, setSize] = useState(30)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff } = cellMapCtx
-
   return (
     <div>
       <div>
@@ -29,7 +28,7 @@ const App = () => {
       <CellMapContext.Provider value={cellMapCtx}>
         <Grid size={size} key={size}>
           {Object.values(cellMap).map(({ x, y }) => (
-            <Cell x={x} y={y} size={size} key={`${size}_${y}_${x}`}></Cell>
+            <Cell x={x} y={y} size={size} key={`${size}_${y}_${x}`} />
           ))}
         </Grid>
       </CellMapContext.Provider>
