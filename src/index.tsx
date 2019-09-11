@@ -1,112 +1,6 @@
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useLayoutEffect,
-  createContext,
-  useContext,
-  useCallback
-} from "react"
+import React, { useState, useMemo, createContext } from "react"
 import { render } from "react-dom"
-import styled from "@emotion/styled"
-
-import module from "../rust-life/Cargo.toml"
-// import module from "./rust-life/src/lib.rs"
-const cellPx = 4
-
-const CellItem = styled.div`
-  width: ${cellPx}px;
-  height: ${cellPx}px;
-  background: ${({ value }) => (value ? "black" : "white")};
-  /* border: 1px solid red; */
-`
-const useTimerEffect = () => {
-  const [time, setTimer] = useState(new Date().getTime())
-  const [diff, setDiff] = useState(0)
-  useLayoutEffect(() => {
-    const loop = () => {
-      roopFn(() => {
-        const f = new Date().getTime()
-        setTimer((time) => {
-          setDiff(f - time)
-          return f
-        })
-        loop()
-      }, 100)
-    }
-    loop()
-  }, [])
-  return { time, diff }
-}
-
-const useCellMap = (size) => {
-  const { time, diff } = useTimerEffect()
-
-  const [cellMap, setMap] = useState(() => {
-    const i = initialArray(size)
-    // console.log(i)
-    return i
-  })
-
-  useEffect(() => {
-    setMap(initialArray(size))
-  }, [size])
-
-  const getValue = useCallback(
-    (i) => {
-      return cellMap[i]
-      // const idx = y * size + x
-      // // if (idx > cellMap.length) {
-      // //   throw new Error(`${x}_${y} ${cellMap.length}`)
-      // // }
-      // return !!cellMap[idx]
-    },
-    [cellMap]
-  )
-
-  const getXY = (i) => {
-    const d = [i % size, Math.floor(i / size)]
-    return d
-  }
-
-  // const memo = useMemo(() => Object.values(cellMap), [cellMap])
-  useEffect(() => {
-    const newMap = module.main(size, cellMap)
-    // @ts-ignore
-    setMap(Array.from(newMap))
-  }, [time])
-  return { cellMap, getValue, time, diff, getXY }
-}
-
-const CellMapContext = createContext<ReturnType<typeof useCellMap>>(
-  // @ts-ignore
-  {}
-)
-
-// const _Cell = ({ x, y,value }) => {
-//   // const { getValue } = useContext(CellMapContext)
-//   const value = getValue(x, y)
-//   return <CellItem value={value} />
-// }
-
-// const Cell = _Cell
-// const Cell = React.memo(_Cell)
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(${({ size }) => size}, ${cellPx}px);
-`
-const initialArray = (size) => {
-  return Array(size * size)
-    .fill(1)
-    .map(() => (Math.random() > 0.5 ? 1 : 0))
-}
-
-const roopFn = (fn, time) => {
-  // return setTimeout(fn, time)
-  // @ts-ignore
-  return requestIdleCallback(fn, { timeout: time })
-}
+import { Cell, Grid, CellItem } from "./Cell"
 
 const chunk = (input, size) => {
   return input.reduce((arr, item, idx) => {
@@ -116,12 +10,14 @@ const chunk = (input, size) => {
   }, [])
 }
 const cellText = (cellMap, size) => {
-  return chunk(cellMap, size)
+  const arr = cellMap.map((c) => (c ? "■" : "□"))
+  return chunk(arr, size)
     .map((c) => c.join(""))
     .join("\n")
 }
+import { useCellMap } from "./useCellMap"
 const App = () => {
-  const [size, setSize] = useState(30)
+  const [size, setSize] = useState(100)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff } = cellMapCtx
   const ct = cellText(cellMap, size)

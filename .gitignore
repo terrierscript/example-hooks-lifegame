@@ -1,2 +1,2 @@
 dist/
-rust-life/target
+rust-life/target/**/*
