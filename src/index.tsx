@@ -7,7 +7,7 @@ import { Canvas } from "react-three-fiber"
 const App = () => {
   const [size, setSize] = useState(30)
   const cellMapCtx = useCellMap(size)
-  const { cellMap, time, diff } = cellMapCtx
+  const { cellMap, time, diff, getValue } = cellMapCtx
   return (
     <div>
       <div>
@@ -34,10 +34,14 @@ const App = () => {
           ))}
         </Grid> */}
         {/* <CellMapContext.Providear value={cellMapCtx}> */}
-        <Canvas camera={{ position: [50, 50, 1000] }}>
-          {Object.values(cellMap).map(({ x, y }, i) => (
-            <CellMesh key={i} x={x} y={y} />
-          ))}
+        <Canvas camera={{ position: [50, 50, 100] }}>
+          {Object.values(cellMap).map(({ x, y }, i) => {
+            const value = getValue(x, y)
+            if (!value) {
+              return
+            }
+            return <CellMesh key={i} x={x} y={y} />
+          })}
           {/* </Grid> */}
         </Canvas>
         {/* </CellMapContext.Provider> */}

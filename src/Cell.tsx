@@ -46,11 +46,6 @@ export const Grid = styled.div<any>`
 export const CellMesh = ({ x, y }) => {
   const px = 1
   const { getValue } = useContext(CellMapContext)
-  const value = getValue(x, y)
-
-  if (value == null) {
-    return
-  }
   return (
     <mesh position={[x * px, y * px, 0]}>
       <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
