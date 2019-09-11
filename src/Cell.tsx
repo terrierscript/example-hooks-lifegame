@@ -3,7 +3,7 @@ import { useCell } from "./useCell"
 // import styled from "styled-components"
 import styled from "@emotion/styled"
 export const cellPx = 4
-export const CellItem = styled.div`
+export const CellItem = styled.div<{ value: boolean }>`
   width: ${cellPx}px;
   height: ${cellPx}px;
   background: ${(props) => (props.value ? "black" : "white")};
