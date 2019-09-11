@@ -1,6 +1,6 @@
 import React, { useState, useMemo, createContext } from "react"
 import { render } from "react-dom"
-import { Cell, Grid, CellItem } from "./Cell"
+import { Cell, Grid, CellItem, CellMesh } from "./Cell"
 import { CellMapContext, useCellMap } from "./useCellMap"
 import { Canvas } from "react-three-fiber"
 
@@ -34,9 +34,9 @@ const App = () => {
           ))}
         </Grid> */}
         {/* <CellMapContext.Providear value={cellMapCtx}> */}
-        <Canvas camera={{ position: [50, 50, 100] }}>
-          {Object.values(cellMap).map(({ x, y }) => (
-            <CellMesh key={i} x={x} y={y} value={v} />
+        <Canvas camera={{ position: [50, 50, 1000] }}>
+          {Object.values(cellMap).map(({ x, y }, i) => (
+            <CellMesh key={i} x={x} y={y} />
           ))}
           {/* </Grid> */}
         </Canvas>
