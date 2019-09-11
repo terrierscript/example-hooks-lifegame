@@ -6,7 +6,7 @@ export const cellPx = 4
 export const CellItem = styled.div<{ value: boolean }>`
   width: ${cellPx}px;
   height: ${cellPx}px;
-  background: ${(props) => (props.value ? "black" : "white")};
+  /* background: ${(props) => (props.value ? "black" : "white")}; */
 `
 // export const CellItem = styled.div.attrs((props) => ({
 //   color: props.value ? "black" : "white"
@@ -24,6 +24,7 @@ const adjCellIds = (x, y, size) =>
     .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
     .flat()
     .filter(([xx, yy]) => !(xx === x && yy === y) && validCell(xx, yy, size))
+
 export const Cell = ({ x, y, initial, time, size }) => {
   const [start, setStart] = useState(false)
   const { value, update } = useCell(initial)
@@ -59,7 +60,7 @@ export const Cell = ({ x, y, initial, time, size }) => {
       update(num)
     }
   }, [start, num])
-  return <CellItem id={id} data-value={value} value={value} />
+  return <CellItem id={id} data-value={value} value={value}></CellItem>
 }
 
 export const Grid = styled.div`
