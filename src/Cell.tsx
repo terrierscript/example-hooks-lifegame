@@ -3,10 +3,17 @@ import { useCell } from "./useCell"
 // import styled from "styled-components"
 import styled from "@emotion/styled"
 export const cellPx = 4
+// export const CellItem = styled.div<{ value: boolean }>`
+//   width: ${cellPx}px;
+//   height: ${cellPx}px;
+//   background: ${(props) => (props.value ? "black" : "white")};
+//   background: ${(props) => (props.value ? "black" : "white")};
+// `
 export const CellItem = styled.div<{ value: boolean }>`
   width: ${cellPx}px;
   height: ${cellPx}px;
-  background: ${(props) => (props.value ? "black" : "white")};
+  opacity: ${(props) => props.value};
+  background: black;
 `
 // export const CellItem = styled.div.attrs((props) => ({
 //   color: props.value ? "black" : "white"
