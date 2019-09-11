@@ -1,17 +1,20 @@
 import React, { useState, useMemo, useLayoutEffect } from "react"
 import { useCell } from "./useCell"
-// import styled from "styled-components"
-import styled from "@emotion/styled"
+import styled from "styled-components"
+// import styled from "@emotion/styled"
 export const cellPx = 4
 // export const CellItem = styled.div<{ value: boolean }>`
 //   width: ${cellPx}px;
 //   height: ${cellPx}px;
 //   background: ${(props) => (props.value ? "black" : "white")};
 // `
-export const CellItem = styled.div<{ value: boolean }>`
+export const CellItem = styled.div.attrs<{ value: boolean }>({
+  style: (props) => ({
+    opacity: props.value
+  })
+})`
   width: ${cellPx}px;
   height: ${cellPx}px;
-  opacity: ${(props) => props.value};
   background: black;
 `
 // export const CellItem = styled.div.attrs((props) => ({
