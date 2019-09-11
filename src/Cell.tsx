@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useLayoutEffect } from "react"
 import { useCell } from "./useCell"
-// import styled from "styled-components"
-import styled from "@emotion/styled"
+import styled from "styled-components"
+// import styled from "@emotion/styled"
 export const cellPx = 4
 
 type CellType = {
@@ -9,12 +9,15 @@ type CellType = {
   x: number
   y: number
 }
-export const CellItem = styled.div<CellType>`
+export const CellItem = styled.div.attrs<CellType>({
+  style: ({ x, y, value }) => ({
+    gridColumnStart: x + 1,
+    gridRowStart: y + 1,
+    background: value ? "black" : "white"
+  })
+})`
   width: ${cellPx}px;
   height: ${cellPx}px;
-  grid-column-start: ${({ x }) => x + 1};
-  grid-row-start: ${({ y }) => y + 1};
-  background: ${({ value }) => (value ? "black" : "white")};
 `
 // export const CellItem = styled.div.attrs((props) => ({
 //   color: props.value ? "black" : "white"
