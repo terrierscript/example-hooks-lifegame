@@ -96,8 +96,8 @@ export const CellMesh = ({ x, y }) => {
   const px = 1
   return (
     <mesh position={[x * px, y * px, 0]}>
-      <planeGeometry attach="geometry" args={[1, 1, 1]} />
-      <meshNormalMaterial attach="material" color="hotpink" />
+      <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
+      <meshNormalMaterial attach="material" color="black" />
     </mesh>
   )
 }
