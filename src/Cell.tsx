@@ -2,12 +2,8 @@ import React, { useState, useMemo, useLayoutEffect } from "react"
 import { useCell } from "./useCell"
 // import styled from "styled-components"
 import styled from "@emotion/styled"
-export const cellPx = 4
-export const CellItem = styled.div<{ value: boolean }>`
-  width: ${cellPx}px;
-  height: ${cellPx}px;
-  background: ${(props) => (props.value ? "black" : "white")};
-`
+import { CellItem, cellPx } from "./CellItem"
+import { PositionCell } from "./Position"
 // export const CellItem = styled.div.attrs((props) => ({
 //   color: props.value ? "black" : "white"
 // }))`
@@ -59,7 +55,8 @@ export const Cell = ({ x, y, initial, time, size }) => {
       update(num)
     }
   }, [start, num])
-  return <CellItem id={id} data-value={value} value={value} />
+  // return <Cell id={id} data-value={value} value={value} />
+  return <PositionCell id={id} x={x} y={y} data-value={value} value={value} />
 }
 
 export const Grid = styled.div`

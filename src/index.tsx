@@ -3,6 +3,7 @@ import { render } from "react-dom"
 import { Cell, Grid } from "./Cell"
 import { initialArray } from "./initialArray"
 import { useTimerEffect } from "./useTimerEffect"
+import { PositionAbsolute } from "./Position"
 
 const App = () => {
   const { time, diff } = useTimerEffect()
@@ -29,7 +30,7 @@ const App = () => {
         <button onClick={() => setSize(80)}>cell: 80</button>
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
-      <Grid size={size} key={size}>
+      <PositionAbsolute>
         {arr.map(({ x, y, v }) => (
           <Cell
             time={time}
@@ -40,7 +41,7 @@ const App = () => {
             initial={v}
           ></Cell>
         ))}
-      </Grid>
+      </PositionAbsolute>
     </div>
   )
 }
