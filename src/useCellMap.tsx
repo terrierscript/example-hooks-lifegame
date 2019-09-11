@@ -61,8 +61,10 @@ export const useCellMap = (size) => {
         memo.map(({ x, y, v }) => {
           const adjCellSize = adjCells(x, y, size)
           const vs = adjCellSize.map(([x, y]) => getValue(x, y))
-          const num = vs.reduce((acc: number, curr) => acc + curr, 0)
+
+          const num = vs.reduce((acc: number, curr) => acc + (curr || 0), 0)
           const nextValue = next(v, num) ? 1 : 0
+
           return [`${x}_${y}`, { x, y, v: nextValue }]
         })
       )

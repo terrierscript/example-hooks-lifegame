@@ -5,7 +5,7 @@ import { CellMapContext, useCellMap } from "./useCellMap"
 import { Canvas } from "react-three-fiber"
 
 const App = () => {
-  const [size, setSize] = useState(10)
+  const [size, setSize] = useState(100)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff, getValue } = cellMapCtx
   return (
@@ -34,6 +34,7 @@ const App = () => {
           ))}
         </Grid> */}
         {/* <CellMapContext.Providear value={cellMapCtx}> */}
+        {/* <Canvas camera={{ position: [30, 20, 50] }}> */}
         <Canvas camera={{ position: [50, 50, 100] }}>
           {Object.values(cellMap).map(({ x, y }, i) => {
             const value = getValue(x, y)
@@ -49,5 +50,7 @@ const App = () => {
     </div>
   )
 }
+type Foo = number
+const z: Foo = NaN
 
 render(<App />, document.querySelector("#container"))
