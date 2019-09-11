@@ -5,7 +5,7 @@ import { CellMapContext, useCellMap } from "./useCellMap"
 import { Canvas } from "react-three-fiber"
 
 const App = () => {
-  const [size, setSize] = useState(100)
+  const [size, setSize] = useState(80)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff, getValue } = cellMapCtx
   return (
