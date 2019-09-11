@@ -6,12 +6,17 @@ const roopFn = (fn, time) => {
   return requestIdleCallback(fn, { timeout: time })
 }
 export const useTimerEffect = () => {
+  const [uuid, _] = useState(Math.ceil(Math.random() * 1000))
+
   const [time, setTimer] = useState(new Date().getTime())
   const [diff, setDiff] = useState(0)
+  const [clear, setClear] = useState(() => {
+    return () => {}
+  })
   useLayoutEffect(() => {
     // return
     const loop = () => {
-      roopFn(() => {
+      const clearFn = roopFn(() => {
         const f = new Date().getTime()
         setTimer((time) => {
           setDiff(f - time)
@@ -19,8 +24,12 @@ export const useTimerEffect = () => {
         })
         loop()
       }, 1000)
+      setClear(clearFn)
     }
     loop()
+    return () => {
+      clear()
+    }
   }, [])
   return { time, diff }
 }
