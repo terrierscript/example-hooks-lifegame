@@ -4,7 +4,7 @@ import { Cell, Grid, CellItem } from "./Cell"
 import { useCellMap } from "./useCellMap"
 
 const App = () => {
-  const [size, setSize] = useState(30)
+  const [size, setSize] = useState(100)
   const cellMapCtx = useCellMap(size)
   const { cellMap, time, diff, getXY } = cellMapCtx
 
@@ -29,6 +29,9 @@ const App = () => {
       {/* <CellMapContext.Providear value={cellMapCtx}> */}
       <Grid size={size} key={size}>
         {cellMap.map((v, i) => {
+          if (!v) {
+            return null
+          }
           const [x, y] = getXY(i)
           return <CellItem key={i} x={x} y={y} value={v} />
         })}
