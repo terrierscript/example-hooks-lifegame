@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { render } from "react-dom"
-import { Cell, Grid } from "./Cell"
+import { Cell, Grid, CellItem } from "./Cell"
 import { initialArray } from "./initialArray"
 import { useTimerEffect } from "./useTimerEffect"
 
 const App = () => {
   const { time, diff } = useTimerEffect()
-  const [size, setSize] = useState(30)
+  const [size, setSize] = useState(10)
   const arr = useMemo(() => {
     const arr = initialArray(size)
     return arr
@@ -30,16 +30,26 @@ const App = () => {
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
       <Grid size={size} key={size}>
-        {arr.map(({ x, y, v }) => (
-          <Cell
-            time={time}
-            x={x}
-            y={y}
-            size={size}
-            key={`${size}_${y}_${x}`}
-            initial={v}
-          ></Cell>
-        ))}
+        {Array(size)
+          .fill(0)
+          .map((_, i) => (
+            <CellItem key={`born_${i}`} x={i} y={i} />
+          ))}
+        {arr.map(({ x, y, v }) => {
+          if (!v) {
+            return null
+          }
+          return (
+            <Cell
+              time={time}
+              x={x}
+              y={y}
+              size={size}
+              key={`${size}_${y}_${x}`}
+              initial={v}
+            ></Cell>
+          )
+        })}
       </Grid>
     </div>
   )

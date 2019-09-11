@@ -1,5 +1,6 @@
 import { useState, useLayoutEffect } from "react"
 const roopFn = (fn, time) => {
+  // return setTimeout(fn, 1000)
   // return setTimeout(fn, time)
   // @ts-ignore
   return requestIdleCallback(fn, { timeout: time })

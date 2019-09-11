@@ -5,6 +5,8 @@ export const cellPx = 4
 export const CellItem = styled.div`
   width: ${cellPx}px;
   height: ${cellPx}px;
+  grid-column-start: ${({ x }) => x + 1};
+  grid-row-start: ${({ y }) => y + 1};
   background: ${({ value }) => (value ? "black" : "white")};
 `
 
@@ -16,6 +18,7 @@ const adjCellIds = (x, y, size) =>
     .map((xx) => [y, y + 1, y - 1].map((yy) => [xx, yy]))
     .flat()
     .filter(([xx, yy]) => !(xx === x && yy === y) && validCell(xx, yy, size))
+
 export const Cell = ({ x, y, initial, time, size }) => {
   const [start, setStart] = useState(false)
   const { value, update } = useCell(initial)
@@ -25,19 +28,27 @@ export const Cell = ({ x, y, initial, time, size }) => {
     [x, y, size]
   )
   // console.log(adjCells)
-  const adj = useMemo(() => {
+  const adjCellElms = useMemo(() => {
     return adjCells
       .map((id) => document.getElementById(id))
-      .map((elm) => elm && elm.dataset.value)
+      .filter((elm) => !!elm)
     //  === "1" ? 1 : 0))
   }, [time, adjCells])
+
+  const adj = useMemo(() => {
+    return adjCellElms.map((elm) => elm && elm.dataset.value)
+    //  === "1" ? 1 : 0))
+  }, [time, adjCells])
+
+  console.log(x, y, value, adjCellElms)
+
   useLayoutEffect(() => {
     if (!adj || adj.every((a) => a === null)) {
       return
     }
-
     setStart(true)
-  }, [start, adj])
+  }, [start, adjCellElms])
+
   const num = useMemo(
     () =>
       adj
@@ -45,13 +56,17 @@ export const Cell = ({ x, y, initial, time, size }) => {
         .reduce((acc: number, curr) => acc + curr, 0),
     [adj]
   )
+
   // console.log(x, y, adj)
   useLayoutEffect(() => {
     if (start) {
       update(num)
     }
   }, [start, num])
-  return <CellItem id={id} data-value={value} value={value} />
+  if (!value) {
+    return null
+  }
+  return <CellItem x={x} y={y} id={id} data-value={value} value={value} />
 }
 
 export const Grid = styled.div`
