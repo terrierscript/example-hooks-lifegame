@@ -6,6 +6,8 @@
   "author": "terrierscript <13282103+terrierscript@users.noreply.github.com>",
   "license": "MIT",
   "dependencies": {
+    "@emotion/core": "^10.0.17",
+    "@emotion/styled": "^10.0.17",
     "@types/node": "^12.7.4",
     "@types/react": "^16.8.24",
     "@types/react-dom": "^16.8.5",
