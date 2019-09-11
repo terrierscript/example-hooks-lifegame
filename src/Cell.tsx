@@ -1,12 +1,20 @@
 import React, { useState, useMemo, useLayoutEffect } from "react"
 import { useCell } from "./useCell"
-import styled from "styled-components"
+// import styled from "styled-components"
+import styled from "@emotion/styled"
 export const cellPx = 4
-export const CellItem = styled.div`
+export const CellItem = styled.div<{ value: boolean }>`
   width: ${cellPx}px;
   height: ${cellPx}px;
-  background: ${({ value }) => (value ? "black" : "white")};
+  background: ${(props) => (props.value ? "black" : "white")};
 `
+// export const CellItem = styled.div.attrs((props) => ({
+//   color: props.value ? "black" : "white"
+// }))`
+//   width: ${cellPx}px;
+//   height: ${cellPx}px;
+//   background: ${(props) => props.color};
+// `
 
 const getId = (x, y) => `cell-${x}_${y}`
 const validCell = (xx, yy, size) =>
@@ -32,9 +40,10 @@ export const Cell = ({ x, y, initial, time, size }) => {
     //  === "1" ? 1 : 0))
   }, [time, adjCells])
   useLayoutEffect(() => {
-    if (adj[0] === null) {
+    if (!adj || adj.every((a) => a === null)) {
       return
     }
+
     setStart(true)
   }, [start, adj])
   const num = useMemo(
