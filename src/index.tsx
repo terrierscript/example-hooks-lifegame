@@ -2,12 +2,14 @@ import React, { useState, useEffect, useMemo } from "react"
 import { render } from "react-dom"
 import { Cell, Grid } from "./Cell"
 import { CellMapContext, useCellMap } from "./useCellMap"
+import { Stripe } from "./LinerGradient"
 
 const App = () => {
   const [size, setSize] = useState(30)
   const cellMapCtx = useCellMap(size)
-  const { cellMap, time, diff } = cellMapCtx
-
+  const { cellMap, time, diff, getCellRows } = cellMapCtx
+  const cellRows = getCellRows()
+  console.log(cellRows.length)
   return (
     <div>
       <div>
@@ -27,11 +29,10 @@ const App = () => {
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
       <CellMapContext.Provider value={cellMapCtx}>
-        <Grid size={size} key={size}>
-          {Object.values(cellMap).map(({ x, y }) => (
-            <Cell x={x} y={y} size={size} key={`${size}_${y}_${x}`}></Cell>
-          ))}
-        </Grid>
+        {/* <Grid size={size} key={size}> */}
+        {cellRows.map((s, i) => (
+          <Stripe key={i} data={s} />
+        ))}
       </CellMapContext.Provider>
     </div>
   )

@@ -1,6 +1,7 @@
 import { createContext, useState, useCallback, useMemo, useEffect } from "react"
 import { useTimerEffect } from "./useTimerEffect"
 import { initialArray } from "./initialArray"
+import { chunk } from "./chunk"
 
 const adjCells = (x, y, size) =>
   [x, x + 1, x - 1]
@@ -30,7 +31,16 @@ export const useCellMap = (size) => {
       })
     )
   })
-
+  useEffect(() => {
+    setMap(() => {
+      const arr = initialArray(size)
+      return Object.fromEntries(
+        arr.map((a) => {
+          return [a.key, { x: a.x, y: a.y, v: a.v }]
+        })
+      )
+    })
+  }, [size])
   const updateValue = useCallback(
     ({ x, y, v }) => {
       setMap((oldMap) => {
@@ -62,7 +72,11 @@ export const useCellMap = (size) => {
       )
     )
   }, [time])
-  return { cellMap, updateValue, getValue, time, diff }
+  const getCellRows = () => {
+    const arr = Object.values(cellMap).map(({ v }) => v)
+    return chunk(arr, size)
+  }
+  return { cellMap, getCellRows, updateValue, getValue, time, diff }
 }
 
 export const CellMapContext = createContext<ReturnType<typeof useCellMap>>({

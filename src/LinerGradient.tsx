@@ -14,9 +14,8 @@ export const Stripe = styled.div.attrs(({ data }) => {
     }, [])
     .filter((i) => !!i)
     .join(",")
-  return { linearGradient }
+  return { style: { background: `linear-gradient(90deg, ${linearGradient})` } }
 })`
   width: 100%;
   height: 1em;
-  background: linear-gradient(90deg, ${({ linearGradient }) => linearGradient});
 `
