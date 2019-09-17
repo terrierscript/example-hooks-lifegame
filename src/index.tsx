@@ -3,11 +3,12 @@ import { render } from "react-dom"
 import { Cell, Grid, CellItem } from "./Cell"
 
 import { useCellMap } from "./useCellMap"
+import { Stripe } from "./LinerGradient"
 const App = () => {
   const [size, setSize] = useState(100)
   const cellMapCtx = useCellMap(size)
-  const { cellMap, time, diff } = cellMapCtx
-
+  const { cellMap, getCellToRows, time, diff } = cellMapCtx
+  const rows = getCellToRows()
   return (
     <div>
       <div>
@@ -27,11 +28,9 @@ const App = () => {
         <button onClick={() => setSize(100)}>cell: 100</button>
       </div>
       {/* <CellMapContext.Providear value={cellMapCtx}> */}
-      <Grid size={size} key={size}>
-        {cellMap.map((v, i) => {
-          return <CellItem key={i} value={v} />
-        })}
-      </Grid>
+      {rows.map((v, i) => {
+        return <Stripe key={i} data={v} />
+      })}
       {/* </CellMapContext.Provider> */}
     </div>
   )

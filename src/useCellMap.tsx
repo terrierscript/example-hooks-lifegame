@@ -38,7 +38,7 @@ export const useCellMap = (size) => {
   const getCellToRows = () => {
     return chunk(cellMap, size)
   }
-  return { cellMap, getValue, time, diff, getXY }
+  return { cellMap, getCellToRows, getValue, time, diff, getXY }
 }
 
 export const CellMapContext = createContext<ReturnType<typeof useCellMap>>(
