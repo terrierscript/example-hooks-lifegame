@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, createContext } from "react"
 import { initialArray } from "./initialArray"
 import { useTimerEffect } from "./useTimerEffect"
 import module from "../rust-life/Cargo.toml"
+import { chunk } from "./chunk"
 
 export const useCellMap = (size) => {
   const { time, diff } = useTimerEffect()
@@ -34,6 +35,9 @@ export const useCellMap = (size) => {
     // @ts-ignore
     setMap(Array.from(newMap))
   }, [time])
+  const getCellToRows = () => {
+    return chunk(cellMap, size)
+  }
   return { cellMap, getValue, time, diff, getXY }
 }
 
